@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import GUI from 'lil-gui'
+import gsap from 'gsap'
 
 /**
  * Debug
@@ -76,7 +77,7 @@ for (let i = 0; i < particlesCount * 3; i++) {
     const i3 = i * 3
 
     positions[i3 + 0] = (Math.random() - 0.5) * 10
-    positions[i3 + 1] = Math.random() - 0.5 - Math.random() * objectDistance * sectionMesh.length  
+    positions[i3 + 1] = objectDistance * 0.5 - Math.random() * objectDistance * sectionMesh.length
     positions[i3 + 2] = (Math.random() - 0.5) * 10
 }
 
@@ -143,9 +144,24 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 let scrollY = window.scrollY
+let currentPosition = 0
 
 window.addEventListener('scroll', () => {
     scrollY = window.scrollY
+    const newSection = Math.round(scrollY / sizes.height)
+    if (newSection !== currentPosition) {
+        currentPosition = newSection
+        gsap.to(
+            sectionMesh[currentPosition].rotation,
+            {
+                duration: 1.5,
+                ease: 'power2.inOut',
+                x: '+=6',
+                y: '+=3',
+                z: '+=2'
+            }
+        )
+    }
 })
 
 const cursor = {
@@ -172,14 +188,14 @@ const tick = () =>
 
     camera.position.y = - scrollY / sizes.height * objectDistance
 
-    const parallaxX = cursor.x
-    const parallaxY = - cursor.y
+    const parallaxX = cursor.x * 0.5
+    const parallaxY = - cursor.y * 0.5
     cameraGroup.position.x += (parallaxX - cameraGroup.position.x) * 5 * deltaTime
     cameraGroup.position.y += (parallaxY - cameraGroup.position.y) * 5 * deltaTime
 
     for (const mesh of sectionMesh) {
-        mesh.rotation.x = elapsedTime * 0.1
-        mesh.rotation.y = elapsedTime * 0.1
+        mesh.rotation.x += deltaTime * 0.1
+        mesh.rotation.y += deltaTime * 0.1
     }
 
     // Render
